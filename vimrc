@@ -59,6 +59,7 @@ call glaive#Install()        " enable this line after the installation of glaive
 "" 3. KEY MAPPINGS (GLOBAL & WINDOWS)
 ""=============================================================================
 " Press 'q' in normal mode to safely close everything
+nnoremap Q :qa!<CR>
 nnoremap q :qa<CR>
 nnoremap s :w<CR>
 
