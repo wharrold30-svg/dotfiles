@@ -1,0 +1,14 @@
+CompileFlags:
+  Add: [
+    -std=c++23,
+    -D_GLIBCXX_USE_CXX11_ABI=1,
+    -D__GXX_EXPERIMENTAL_CXX0X__=1,
+    --gcc-toolchain=/usr,
+    -isystem, /usr/include/c++/15,
+    -isystem, /usr/include/x86_64-linux-gnu/c++/15,
+    -isystem, /usr/include/c++/15/backward,
+    -isystem, /usr/local/include,
+    -isystem, /usr/include/x86_64-linux-gnu,
+    -isystem, /usr/include
+  ]
+
