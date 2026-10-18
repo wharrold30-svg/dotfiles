@@ -227,3 +227,12 @@ highlight link cCustomScope Statement
 highlight link cCustomMemVar Identifier
 highlight link AngleBracketContents Identifier
 
+" Automatically calculate the project root (looks for .git directory)
+function! GetProjectRoot()
+  let l:git_dir = finddir('.git', ';')
+  if !empty(l:git_dir)
+    return fnamemodify(l:git_dir, ':p:h:h')
+  endif
+  return getcwd() " Fallback to current working directory if not a git repo
+endfunction
+

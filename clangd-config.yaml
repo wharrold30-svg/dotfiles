@@ -1,7 +1,10 @@
 CompileFlags:
   QueryDriver: [ /usr/bin/g++-15, /usr/bin/g++ ]
+  CompilationDatabase: .
   Add: [
     -std=c++23,
-    -stdlib=libstdc++
+    -stdlib=libstdc++,
+    -Iinclude,
+    -Iexternal/include
   ]
 
