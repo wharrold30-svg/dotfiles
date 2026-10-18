@@ -63,6 +63,10 @@ nnoremap Q :qa!<CR>
 nnoremap q :qa<CR>
 nnoremap s :w<CR>
 
+" Press <Leader>vp to prompt for a command and run it in Vimux
+map <Leader>v :VimuxPromptCommand<CR>
+
+
 " Resize Vim windows using Alt + Arrow keys
 nnoremap <M-Up> :resize +2<CR>
 nnoremap <M-Down> :resize -2<CR>
