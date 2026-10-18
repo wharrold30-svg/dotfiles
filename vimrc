@@ -62,6 +62,8 @@ call glaive#Install()        " enable this line after the installation of glaive
 nnoremap Q :qa!<CR>
 nnoremap q :qa<CR>
 nnoremap s :w<CR>
+"Leader dd will clear the screan. i temd to use this often
+nnoremap <Leader>dd :%d<CR>
 
 " Press <Leader>vp to prompt for a command and run it in Vimux
 map <Leader>v :VimuxPromptCommand<CR>
