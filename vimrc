@@ -104,7 +104,6 @@ autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4 autoindent
 
 ""--- YouCompleteMe (YCM) ---
 let g:ycm_confirm_extra_conf = 0
-" setup for ycm
 let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/examples/.ycm_extra_conf.py'
 let g:ycm_python_binary_path = 'python'
 let g:ycm_complete_in_comments = 1
@@ -115,6 +114,13 @@ let g:ycm_semantic_triggers =  {
   \ 'cpp' : ['re!\w{2}'],
   \ 'python' : ['re!\w{2}'],
   \ }
+
+" CORRECT WAY TO FORCE C++17/20/23 IN YCM CLANGD:
+let g:ycm_clangd_args = ['--header-insertion=never']
+let g:ycm_extra_conf_globs = ['~/.vim/.ycm_extra_conf.py']
+
+" This forces the default fallback flags to use modern C++ standards
+let g:ycm_extra_conf_vim_data = ['-std=c++20']
 
 ""--- Syntastic ---
 set statusline+=%#warningmsg#
