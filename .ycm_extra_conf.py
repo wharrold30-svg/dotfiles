@@ -69,13 +69,13 @@ def DirectoryOfThisScript():
 
 
 def IsHeaderFile( filename ):
-  extension = os.path.splitext( filename )[1]
+  extension = os.path.splitext( filename )
   return extension in [ '.h', '.hxx', '.hpp', '.hh' ]
 
 
 def GetCompilationInfoForFile( filename ):
   if IsHeaderFile( filename ):
-    basename = os.path.splitext( filename )[0]
+    basename = os.path.splitext( filename )
     for extension in SOURCE_EXTENSIONS:
       replacement_file = basename + extension
       if os.path.exists( replacement_file ):
@@ -87,21 +87,34 @@ def GetCompilationInfoForFile( filename ):
   return database.GetCompilationInfoForFile( filename )
 
 
-# This is the entry point; this function is called by ycmd to produce flags for a file.
 def Settings( **kwargs ):
   filename = kwargs.get( 'filename', '' )
-  # Initialize using our base flags
   final_flags = list( flags )
 
-  # DYNAMIC PATH RESOLUTION: If a file is active, resolve '../include' relative to it
   if filename:
+    # Get directory of current active file
     file_dir = os.path.dirname( os.path.abspath( filename ) )
-    # Resolve the true location of '../include' relative to the file being edited
-    resolved_include = os.path.abspath( os.path.join( file_dir, '../include' ) )
-    final_flags.extend( [ '-I', resolved_include ] )
     final_flags.extend( [ '-I', file_dir ] )
-    external_include = os.path.abspath( os.path.join( file_dir, '../external/include' ) )
-    final_flags.extend( [ '-I', external_include ] )
+
+    # Safely find the absolute path of the root "Auto-assignment" folder
+    current = file_dir
+    project_root = None
+    while current and current != os.path.dirname(current):
+      if os.path.basename(current) == 'Auto-assignment':
+        project_root = current
+        break
+      current = os.path.dirname(current)
+
+    # Use clean absolute locations based on the project root directory
+    if project_root:
+      final_flags.extend( [ '-I', os.path.join(project_root, 'include') ] )
+      final_flags.extend( [ '-I', os.path.join(project_root, 'external/include') ] )
+    else:
+      # Fallback defaults for other programs
+      resolved_include = os.path.abspath( os.path.join( file_dir, '../include' ) )
+      external_include = os.path.abspath( os.path.join( file_dir, '../external/include' ) )
+      final_flags.extend( [ '-I', resolved_include ] )
+      final_flags.extend( [ '-I', external_include ] )
 
   if not database:
     return {
@@ -115,7 +128,6 @@ def Settings( **kwargs ):
   if not compilation_info:
     return None
 
-  # Handle compilation database values safely if one gets generated later
   db_flags = list( compilation_info.compiler_flags_ ) + [ '-std=c++23' ]
   return {
     'flags': db_flags,
@@ -123,4 +135,3 @@ def Settings( **kwargs ):
     'override_clang_flags': True,
     'do_not_cache': True
   }
-
