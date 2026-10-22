@@ -109,12 +109,15 @@ def Settings( **kwargs ):
     if project_root:
       final_flags.extend( [ '-I', os.path.join(project_root, 'include') ] )
       final_flags.extend( [ '-I', os.path.join(project_root, 'external/include') ] )
+      final_flags.extend( [ '-I', os.path.join(project_root, 'libs') ] )
     else:
       # Fallback defaults for other programs
       resolved_include = os.path.abspath( os.path.join( file_dir, '../include' ) )
       external_include = os.path.abspath( os.path.join( file_dir, '../external/include' ) )
+      resolved_libs = os.path.abspath( os.path.join( file_dir, '../libs' ) )
       final_flags.extend( [ '-I', resolved_include ] )
       final_flags.extend( [ '-I', external_include ] )
+      final_flags.extend( [ '-I', resolved_libs ] )
 
   if not database:
     return {
