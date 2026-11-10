@@ -3,7 +3,7 @@
 set -e
 
 echo "========================================================="
-echo "       DEPLOYING ENVIRONMENT (LIGHT/MICRO BUILD)        "
+echo "     DEPLOYING FULL ENVIRONMENT (STANDARD BUILD)         "
 echo "========================================================="
 
 # 1. Update system repositories and add the cutting-edge GCC 15 toolchain PPA
@@ -37,10 +37,13 @@ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
 # 4. GNU Stow Symlink Engine deployment
 echo "--> Deploying terminal configurations and text editor symlinks via Stow..."
-cd "$(dirname "$0")"
+cd "$HOME/dotfiles"
 
+# Clear out loose configurations to prevent symlink blockages
 [ -f ~/.bashrc ] && mv ~/.bashrc ~/.bashrc.bak 2>/dev/null || true
-[ -f ~/.vimrc ] && rm -f ~/.vimrc
+[ -f ~/.vimrc ] && mv ~/.vimrc ~/.vimrc.bak 2>/dev/null || true
+[ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak 2>/dev/null || true
+
 
 if [ -d "$HOME/.vim" ] && [ ! -L "$HOME/.vim" ]; then
     echo "Backing up existing loose ~/.vim directory to ~/.vim.bak..."
@@ -73,9 +76,10 @@ fi
 
 git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
 
-echo "--> Allocating temporary swap space for low-RAM protection..."
+# Clean up stale swap file states from previous test runs to prevent busy locks
 sudo swapoff /swapfile 2>/dev/null || true && sudo rm -f /swapfile
 
+echo "--> Allocating temporary swap space for low-RAM protection..."
 sudo fallocate -l 2G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
@@ -83,17 +87,19 @@ sudo swapon /swapfile
 
 cd "$YCM_DIR"
 
+# Restrict compilation to a single thread to guarantee low RAM peaks
 export YCM_CORES=1
+
 python3 install.py --clangd-completer
 
 echo "--> Cleaning up temporary swap space..."
 sudo swapoff /swapfile
 sudo rm /swapfile
 
+
 # 7. Automated Headless Vundle Plugin Installation
 echo "--> Running automated headless installation for remaining Vundle plugins..."
-vim +PluginInstall +qall
-
+vim -i NONE -c "PluginInstall" -c "qa"
 echo "========================================================="
 echo "   RESTORATION COMPLETE! ENVIRONMENT SECURE AND READY   "
 echo "========================================================="

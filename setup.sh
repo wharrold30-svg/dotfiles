@@ -37,10 +37,13 @@ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
 # 4. GNU Stow Symlink Engine deployment
 echo "--> Deploying terminal configurations and text editor symlinks via Stow..."
-cd "$(dirname "$0")"
+cd "$HOME/dotfiles"
 
+# Clear out loose configurations to prevent symlink blockages
 [ -f ~/.bashrc ] && mv ~/.bashrc ~/.bashrc.bak 2>/dev/null || true
-[ -f ~/.vimrc ] && rm -f ~/.vimrc
+[ -f ~/.vimrc ] && mv ~/.vimrc ~/.vimrc.bak 2>/dev/null || true
+[ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak 2>/dev/null || true
+
 
 if [ -d "$HOME/.vim" ] && [ ! -L "$HOME/.vim" ]; then
     echo "Backing up existing loose ~/.vim directory to ~/.vim.bak..."
@@ -78,8 +81,7 @@ python3 install.py --clangd-completer
 
 # 7. Automated Headless Vundle Plugin Installation
 echo "--> Running automated headless installation for remaining Vundle plugins..."
-vim +PluginInstall +qall
-
+vim -i NONE -c "PluginInstall" -c "qa"
 echo "========================================================="
 echo "   RESTORATION COMPLETE! ENVIRONMENT SECURE AND READY   "
 echo "========================================================="

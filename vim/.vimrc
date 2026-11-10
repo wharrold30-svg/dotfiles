@@ -54,9 +54,7 @@ filetype plugin indent on    " required
 
 " Glaive Activation (Guarded with a runtime path check for automated
 " installation safety)
- if exists('*glaive#Install')
-  call glaive#Install()
- endif
+call glaive#install()
 ""=============================================================================
 "" 3. KEY MAPPINGS (GLOBAL & WINDOWS)
 ""=============================================================================
