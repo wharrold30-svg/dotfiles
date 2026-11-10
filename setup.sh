@@ -60,9 +60,10 @@ if [ -d "$YCM_DIR" ]; then
     rm -rf "$YCM_DIR"
 fi
 
-git clone --recursive https://github.com "$YCM_DIR"
+# Clone the engine directly from the verified official repository location
+git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
 
-# Step inside and execute the python build script utilizing the newly updated clangd link
+# Step inside and execute the python build script utilizing the clangd flag
 cd "$YCM_DIR"
 python3 install.py --clangd-completer
 
