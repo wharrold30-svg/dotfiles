@@ -13,20 +13,7 @@ sudo apt-get install -y software-properties-common
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 sudo apt-get update
 
-# 1. Purge legacy build states and clean leftover swap configurations
-echo "--> Auditing system storage for orphaned virtual memory flags..."
-if [ -f /swapfile ]; then
-    echo "Found leftover /swapfile from a previous build cycle. Cleaning up safely..."
-    sudo swapoff /swapfile 2>/dev/null || true
-    sudo rm -f /swapfile
-fi
 
-# 2. Allocate and mount isolated staging swap block (4GB)
-echo "--> Initializing 4GB temporary build staging swap..."
-sudo dd if=/dev/zero of=/swapfile bs=1M count=4096 status=progress
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile5
 
 # 2. Install all development tools, compilers, and core libraries
 echo "--> Installing compilers, build systems, and development packages..."
@@ -81,6 +68,21 @@ if [ -d "$YCM_DIR" ]; then
 fi
 
 git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
+
+# 1. Purge legacy build states and clean leftover swap configurations
+echo "--> Auditing system storage for orphaned virtual memory flags..."
+if [ -f /swapfile ]; then
+    echo "Found leftover /swapfile from a previous build cycle. Cleaning up safely..."
+    sudo swapoff /swapfile 2>/dev/null || true
+    sudo rm -f /swapfile
+fi
+
+# 2. Allocate and mount isolated staging swap block (4GB)
+echo "--> Initializing 4GB temporary build staging swap..."
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile5
 
 cd "$YCM_DIR"
 python3 install.py --clangd-completer
