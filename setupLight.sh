@@ -74,6 +74,8 @@ fi
 git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
 
 echo "--> Allocating temporary swap space for low-RAM protection..."
+sudo swapoff /swapfile 2>/dev/null || true && sudo rm -f /swapfile
+
 sudo fallocate -l 2G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
