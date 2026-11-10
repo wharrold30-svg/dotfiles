@@ -3,7 +3,7 @@
 set -e
 
 echo "========================================================="
-echo "        RECREATING COMPLETE DEVELOPMENT ENVIRONMENT      "
+echo "     DEPLOYING FULL ENVIRONMENT (STANDARD BUILD)         "
 echo "========================================================="
 
 # 1. Update system repositories and add the cutting-edge GCC 15 toolchain PPA
@@ -37,46 +37,42 @@ sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
 # 4. GNU Stow Symlink Engine deployment
 echo "--> Deploying terminal configurations and text editor symlinks via Stow..."
-# Navigate to the script's home location to ensure stow maps directories correctly
 cd "$(dirname "$0")"
 
-# Backup or clear existing loose configurations to prevent stow target blockages
 [ -f ~/.bashrc ] && mv ~/.bashrc ~/.bashrc.bak 2>/dev/null || true
 [ -f ~/.vimrc ] && rm -f ~/.vimrc
 
-# CRITICAL FIX: Clear loose ~/.vim configuration folder if it isn't a symlink to prevent stow blockages
 if [ -d "$HOME/.vim" ] && [ ! -L "$HOME/.vim" ]; then
     echo "Backing up existing loose ~/.vim directory to ~/.vim.bak..."
     mv "$HOME/.vim" "$HOME/.vim.bak"
 fi
 
-# Automatically drop the symlink shortcuts from the repository directly into your home folder
+# Ensure the empty target layout directory exists inside stow so it registers as a symlink
+mkdir -p vim/.vim/bundle
+
 stow bash
 stow tmux
 stow vim
 stow clangd
 
-# 5. Bootstrap Vundle Plugin Manager
+# 5. Bootstrap Vundle Plugin Manager into standard bundle folder
 echo "--> Bootstrapping Vundle runtime ecosystem..."
 VUNDLE_DIR="$HOME/.vim/bundle/Vundle.vim"
 if [ ! -d "$VUNDLE_DIR" ]; then
-    git clone https://github.com/ycm-core/YouCompleteMe "$VUNDLE_DIR"
+    git clone https://github.com/VundleVim/Vundle.vim "$VUNDLE_DIR"
 fi
 
 # 6. Native YouCompleteMe C++ Core Engine Compilations
 echo "--> Cloning and compiling the YouCompleteMe C++ engine..."
-YCM_DIR="$HOME/.vim/pack/plugins/start/YouCompleteMe"
+YCM_DIR="$HOME/.vim/bundle/YouCompleteMe"
 
-# Wipe any corrupt partial installations if they exist, then clone fresh from source
 if [ -d "$YCM_DIR" ]; then
     echo "Existing YCM directory found. Refreshing codebase..."
     rm -rf "$YCM_DIR"
 fi
 
-# Clone the engine directly from the verified official repository location
 git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
 
-# Step inside and execute the python build script utilizing the clangd flag
 cd "$YCM_DIR"
 python3 install.py --clangd-completer
 
