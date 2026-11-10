@@ -35,28 +35,19 @@ echo "--> Configuring system alternatives for GCC 15..."
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
-# 4. GNU Stow Symlink Engine deployment
-echo "--> Deploying terminal configurations and text editor symlinks via Stow..."
-cd "$HOME/dotfiles"
-
-# Clear out loose configurations to prevent symlink blockages
+# 4. Clear out loose configurations to prevent symlink blockages ahead of time
+echo "--> Cleaning up old configuration files..."
 [ -f ~/.bashrc ] && mv ~/.bashrc ~/.bashrc.bak 2>/dev/null || true
 [ -f ~/.vimrc ] && mv ~/.vimrc ~/.vimrc.bak 2>/dev/null || true
 [ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak 2>/dev/null || true
-
 
 if [ -d "$HOME/.vim" ] && [ ! -L "$HOME/.vim" ]; then
     echo "Backing up existing loose ~/.vim directory to ~/.vim.bak..."
     mv "$HOME/.vim" "$HOME/.vim.bak"
 fi
 
-# Ensure the empty target layout directory exists inside stow so it registers as a symlink
-mkdir -p vim/.vim/bundle
-
-stow bash
-stow tmux
-stow vim
-stow clangd
+# Manually generate the expected internal directory tree so Git can clone cleanly
+mkdir -p "$HOME/.vim/bundle"
 
 # 5. Bootstrap Vundle Plugin Manager into standard bundle folder
 echo "--> Bootstrapping Vundle runtime ecosystem..."
@@ -79,9 +70,18 @@ git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
 cd "$YCM_DIR"
 python3 install.py --clangd-completer
 
-# 7. Automated Headless Vundle Plugin Installation
+# 7. GNU Stow Symlink Engine deployment (Moved here!)
+echo "--> Deploying terminal configurations and text editor symlinks via Stow..."
+cd "$HOME/dotfiles"
+stow bash
+stow tmux
+stow vim
+stow clangd
+
+# 8. Automated Headless Vundle Plugin Installation
 echo "--> Running automated headless installation for remaining Vundle plugins..."
 vim -i NONE -c "PluginInstall" -c "qa"
+
 echo "========================================================="
 echo "   RESTORATION COMPLETE! ENVIRONMENT SECURE AND READY   "
 echo "========================================================="

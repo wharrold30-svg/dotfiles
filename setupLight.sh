@@ -13,6 +13,21 @@ sudo apt-get install -y software-properties-common
 sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
 sudo apt-get update
 
+# 1. Purge legacy build states and clean leftover swap configurations
+echo "--> Auditing system storage for orphaned virtual memory flags..."
+if [ -f /swapfile ]; then
+    echo "Found leftover /swapfile from a previous build cycle. Cleaning up safely..."
+    sudo swapoff /swapfile 2>/dev/null || true
+    sudo rm -f /swapfile
+fi
+
+# 2. Allocate and mount isolated staging swap block (4GB)
+echo "--> Initializing 4GB temporary build staging swap..."
+sudo dd if=/dev/zero of=/swapfile bs=1M count=4096 status=progress
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile5
+
 # 2. Install all development tools, compilers, and core libraries
 echo "--> Installing compilers, build systems, and development packages..."
 sudo apt-get install -y \
@@ -35,28 +50,19 @@ echo "--> Configuring system alternatives for GCC 15..."
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
-# 4. GNU Stow Symlink Engine deployment
-echo "--> Deploying terminal configurations and text editor symlinks via Stow..."
-cd "$HOME/dotfiles"
-
-# Clear out loose configurations to prevent symlink blockages
+# 4. Clear out loose configurations to prevent symlink blockages ahead of time
+echo "--> Cleaning up old configuration files..."
 [ -f ~/.bashrc ] && mv ~/.bashrc ~/.bashrc.bak 2>/dev/null || true
 [ -f ~/.vimrc ] && mv ~/.vimrc ~/.vimrc.bak 2>/dev/null || true
 [ -f ~/.tmux.conf ] && mv ~/.tmux.conf ~/.tmux.conf.bak 2>/dev/null || true
-
 
 if [ -d "$HOME/.vim" ] && [ ! -L "$HOME/.vim" ]; then
     echo "Backing up existing loose ~/.vim directory to ~/.vim.bak..."
     mv "$HOME/.vim" "$HOME/.vim.bak"
 fi
 
-# Ensure the empty target layout directory exists inside stow so it registers as a symlink
-mkdir -p vim/.vim/bundle
-
-stow bash
-stow tmux
-stow vim
-stow clangd
+# Manually generate the expected internal directory tree so Git can clone cleanly
+mkdir -p "$HOME/.vim/bundle"
 
 # 5. Bootstrap Vundle Plugin Manager into standard bundle folder
 echo "--> Bootstrapping Vundle runtime ecosystem..."
@@ -76,30 +82,26 @@ fi
 
 git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
 
-# Clean up stale swap file states from previous test runs to prevent busy locks
-sudo swapoff /swapfile 2>/dev/null || true && sudo rm -f /swapfile
-
-echo "--> Allocating temporary swap space for low-RAM protection..."
-sudo fallocate -l 2G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-
 cd "$YCM_DIR"
-
-# Restrict compilation to a single thread to guarantee low RAM peaks
-export YCM_CORES=1
-
 python3 install.py --clangd-completer
 
-echo "--> Cleaning up temporary swap space..."
+#  Clean up temporary Swap footprint right after heavy processing concludes
+echo "--> Demobilizing and stripping temporary swap blocks..."
 sudo swapoff /swapfile
-sudo rm /swapfile
+sudo rm -f /swapfile
 
+# 7. GNU Stow Symlink Engine deployment (Moved here!)
+echo "--> Deploying terminal configurations and text editor symlinks via Stow..."
+cd "$HOME/dotfiles"
+stow bash
+stow tmux
+stow vim
+stow clangd
 
-# 7. Automated Headless Vundle Plugin Installation
+# 8. Automated Headless Vundle Plugin Installation
 echo "--> Running automated headless installation for remaining Vundle plugins..."
 vim -i NONE -c "PluginInstall" -c "qa"
+
 echo "========================================================="
 echo "   RESTORATION COMPLETE! ENVIRONMENT SECURE AND READY   "
 echo "========================================================="
