@@ -44,13 +44,26 @@ cd "$(dirname "$0")"
 [ -f ~/.bashrc ] && mv ~/.bashrc ~/.bashrc.bak 2>/dev/null || true
 [ -f ~/.vimrc ] && rm -f ~/.vimrc
 
+# CRITICAL FIX: Clear loose ~/.vim configuration folder if it isn't a symlink to prevent stow blockages
+if [ -d "$HOME/.vim" ] && [ ! -L "$HOME/.vim" ]; then
+    echo "Backing up existing loose ~/.vim directory to ~/.vim.bak..."
+    mv "$HOME/.vim" "$HOME/.vim.bak"
+fi
+
 # Automatically drop the symlink shortcuts from the repository directly into your home folder
 stow bash
 stow tmux
 stow vim
 stow clangd
 
-# 5. Native YouCompleteMe C++ Core Engine Compilations
+# 5. Bootstrap Vundle Plugin Manager
+echo "--> Bootstrapping Vundle runtime ecosystem..."
+VUNDLE_DIR="$HOME/.vim/bundle/Vundle.vim"
+if [ ! -d "$VUNDLE_DIR" ]; then
+    git clone https://github.com/ycm-core/YouCompleteMe "$VUNDLE_DIR"
+fi
+
+# 6. Native YouCompleteMe C++ Core Engine Compilations
 echo "--> Cloning and compiling the YouCompleteMe C++ engine..."
 YCM_DIR="$HOME/.vim/pack/plugins/start/YouCompleteMe"
 
@@ -66,6 +79,10 @@ git clone --recursive https://github.com/ycm-core/YouCompleteMe "$YCM_DIR"
 # Step inside and execute the python build script utilizing the clangd flag
 cd "$YCM_DIR"
 python3 install.py --clangd-completer
+
+# 7. Automated Headless Vundle Plugin Installation
+echo "--> Running automated headless installation for remaining Vundle plugins..."
+vim +PluginInstall +qall
 
 echo "========================================================="
 echo "   RESTORATION COMPLETE! ENVIRONMENT SECURE AND READY   "
