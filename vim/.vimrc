@@ -52,9 +52,11 @@ Plugin 'rhysd/vim-clang-format'
 call vundle#end()            " required
 filetype plugin indent on    " required
 
-" Glaive Activation
-call glaive#Install()        " enable this line after the installation of glaive
-
+" Glaive Activation (Guarded with a runtime path check for automated
+" installation safety)
+ if exists('*glaive#Install')
+  call glaive#Install()
+ endif
 ""=============================================================================
 "" 3. KEY MAPPINGS (GLOBAL & WINDOWS)
 ""=============================================================================
