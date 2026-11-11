@@ -82,7 +82,7 @@ echo "--> Initializing 4GB temporary build staging swap..."
 sudo fallocate -l 2G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
-sudo swapon /swapfile5
+sudo swapon /swapfile
 
 cd "$YCM_DIR"
 python3 install.py --clangd-completer
