@@ -142,8 +142,9 @@ augroup autoformat_settings
   autocmd FileType python AutoFormatBuffer yapf
 augroup END
 " use google style for clang-format
-Glaive codefmt clang_format_style='google'
-
+if exists(':Glaive')
+  Glaive codefmt clang_format_style='google'
+endif
 ""--- Clang-Format ---
 " Automatically format C/C++ files on save
 let g:clang_format#auto_format = 1

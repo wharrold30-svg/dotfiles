@@ -86,3 +86,17 @@ echo "========================================================="
 echo "   RESTORATION COMPLETE! ENVIRONMENT SECURE AND READY   "
 echo "========================================================="
 
+
+# 9. Reload tmux if a server is actively running
+if tmux info &> /dev/null; then
+    echo "--> Reloading active tmux configuration..."
+    tmux source-file ~/.tmux.conf
+fi
+
+echo "========================================================="
+echo "   RESTORATION COMPLETE! ENVIRONMENT SECURE AND READY   "
+echo "========================================================="
+
+# 10. Replace the current shell with a fresh login shell to apply .bashrc
+exec bash -l
+
