@@ -53,8 +53,9 @@ call vundle#end()            " required
 filetype plugin indent on    " required
 
 " Glaive Activation (Guarded with a runtime path check for automated installation safety)
-if !empty(glob('~/.vim/bundle/vim-glaive/autoload/glaive.vim'))
-  call glaive#install()
+" Replace lines 55-58 with this:
+if !empty(globpath(&rtp, 'autoload/glaive.vim'))
+  call glaive#Install()
 endif
 
 ""=============================================================================
